@@ -1,5 +1,6 @@
 package com.example.agrahajigyasu.drinkingreminder1;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -9,15 +10,17 @@ import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
+import android.os.Build;
+import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
+
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-
-
 import java.util.Calendar;
+import java.util.Date;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
@@ -27,6 +30,7 @@ public class AlarmNotificationSender extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent) {
         boolean b = false;
+        Log.d("Notification", "riya2");
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
         int wakingHour = pref.getInt("WakingHour", 0);
         int wakingMin = pref.getInt("WakingMin", 0);
@@ -64,7 +68,8 @@ public class AlarmNotificationSender extends BroadcastReceiver
             e.printStackTrace();
         }
         if (b) {
-            NotificationCompat.Builder notification = new NotificationCompat.Builder(context);
+            Log.d("Notification", "riya");
+            NotificationCompat.Builder notification = new NotificationCompat.Builder(context, "notify001");
             Intent newIntent = new Intent(context, Home2Activity.class);
             newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 100, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -74,7 +79,18 @@ public class AlarmNotificationSender extends BroadcastReceiver
             notification.setContentTitle("Drinking Reminder");
             notification.setContentText("Feeling lethargic!!! Drinking Water may help");
             notification.setSmallIcon(R.drawable.ic_launcher);
+            notification.setPriority(NotificationCompat.PRIORITY_HIGH);
             NotificationManager nm = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            {
+                String channelId = "Your_channel_id";
+                NotificationChannel channel = new NotificationChannel(
+                        channelId,
+                        "Channel human readable title",
+                        NotificationManager.IMPORTANCE_HIGH);
+                nm.createNotificationChannel(channel);
+                notification.setChannelId(channelId);
+            }
             nm.notify(uniqueID, notification.build());
             try {
                 Uri snNotification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
